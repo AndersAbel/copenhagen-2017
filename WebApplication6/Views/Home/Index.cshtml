@@ -1,0 +1,48 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="row">
+    <h1 id="user"></h1>
+    <h1 id="result"></h1>
+    <h1><a href="#" onclick="authContext.login(); return false;">Login In</a></h1>
+    
+    <script src="https://secure.aadcdn.microsoftonline-p.com/lib/1.0.14/js/adal.min.js"></script>
+    <script type="text/javascript">
+        var authContext = new AuthenticationContext({
+            clientId: 'aaa9aa69-d39f-432a-abcb-779809a6d3f5',
+            tenant: 'andersabelnu.onmicrosoft.com'
+        });
+
+        if (authContext.isCallback(window.location.hash)) {
+            authContext.handleWindowCallback();
+        }
+
+        var user = authContext.getCachedUser();
+        if (user) {
+            document.getElementById('user').innerText =
+                user.userName;
+
+            authContext.acquireToken(
+                authContext.config.clientId,
+                function (error, token) {
+                    if (error || !token) {
+                        document.getElementById('result').innerText =
+                            'Token Error: ' + error;
+                    }
+
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET', 'https://localhost:44364/api/values/42');
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
+                            document.getElementById('result').innerText =
+                                'Retreived data: ' + xhr.responseText;
+                        }
+                    }
+                    xhr.send();
+                })
+        }
+
+    </script>
+</div>
